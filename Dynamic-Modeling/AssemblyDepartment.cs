@@ -22,7 +22,6 @@
                     return ADetailsAmount;
                 else
                     return BDetailsAmount;
-                }
             }
         }
     }
