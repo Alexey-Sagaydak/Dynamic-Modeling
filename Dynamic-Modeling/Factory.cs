@@ -19,7 +19,7 @@ namespace Dynamic_Modeling
         public Handler[] LineB { get; private set; }
         public AssemblyDepartment DetailsAssemblyDepartment { get; private set; }
         public int ModelingTime { get; private set; }
-        public int MadeProductsAmount { get; private set; }
+        public int[] MadeProductsAmount { get; private set; }
 
         private float alpha;
         private float muCritical;
@@ -45,6 +45,7 @@ namespace Dynamic_Modeling
 
             LineA = new Handler[TypeAHandlersAmount];
             LineB = new Handler[TypeBHandlersAmount];
+            MadeProductsAmount = new int[currentTime];
             DetailsAssemblyDepartment = new AssemblyDepartment(modelingTime, startProcessedADetailsAmount, startProcessedBDetailsAmount);
             
             InitializeLines(LineA, modelingTime, startHandlersQueueAmount, startDetailsPerTact, startADetailsToStorage);
@@ -68,10 +69,12 @@ namespace Dynamic_Modeling
                 Dictionary<LineType, Instruction> Instructions = GetChangingLinesProcessingTimeInstructions();
 
                 foreach (KeyValuePair<LineType, Instruction> instruction in Instructions)
-                    ChangeLinesQueue(instruction.Key, instruction.Value);
+                    ChangeLinesQueue(instruction.Key);
 
                 foreach (KeyValuePair<LineType, Instruction> instruction in Instructions)
                     ChangeLineDetailsPerTact(instruction.Key, instruction.Value);
+
+                MakeProducts();
 
                 if (!(AddDetailsToStorage(LineA) && AddDetailsToStorage(LineB)))
                     return false;
@@ -80,7 +83,19 @@ namespace Dynamic_Modeling
             return true;
         }
 
-        private void ChangeLinesQueue(LineType lineType, Instruction instruction)
+        private void MakeProducts()
+        {
+            while (DetailsAssemblyDepartment.ADetailsAmount[currentTime] >= ADetailsAmountToMakeProduct
+                && DetailsAssemblyDepartment.BDetailsAmount[currentTime] >= BDetailsAmountToMakeProduct)
+            {
+                MadeProductsAmount[currentTime] = MadeProductsAmount[currentTime - 1] + 1;
+
+                DetailsAssemblyDepartment.ADetailsAmount[currentTime] -= ADetailsAmountToMakeProduct;
+                DetailsAssemblyDepartment.BDetailsAmount[currentTime] -= BDetailsAmountToMakeProduct;
+            }
+        }
+
+        private void ChangeLinesQueue(LineType lineType)
         {
             Handler[] line = (lineType == LineType.A) ? LineA : LineB;
             int detailsToMove;
