@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 
 namespace Dynamic_Modeling
 {
@@ -7,9 +8,10 @@ namespace Dynamic_Modeling
         [STAThread]
         static void Main()
         {
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new Form1());
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new ChartForm());
+
             Factory factory = new Factory(5, 20, 700, 1000, 70, 30, 40, 200, 300, 4, 12, 20, 0.1f, 0.5f);
         }
     }
