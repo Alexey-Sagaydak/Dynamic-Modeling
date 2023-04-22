@@ -17,13 +17,12 @@ namespace Dynamic_Modeling
     {
         public Handler[] LineA { get; private set; }
         public Handler[] LineB { get; private set; }
-        public Storage DetailsStorage { get; private set; }
         public AssemblyDepartment DetailsAssemblyDepartment { get; private set; }
         public int ModelingTime { get; private set; }
         public int MadeProductsAmount { get; private set; }
 
         private float alpha;
-        private float MuCritical;
+        private float muCritical;
         private float delayTimeMin;
         private float delayTimeAverage;
         private float delayTimeMax;
@@ -31,15 +30,13 @@ namespace Dynamic_Modeling
         private int BDetailsAmountToMakeProduct;
         private int currentTime;
 
-        private readonly int TypeADetails = 0;
-        private readonly int TypeBDetails = 1;
-        private readonly int TypeAHandlersAmount = 3;
-        private readonly int TypeBHandlersAmount = 2;
+        private readonly int TypeAHandlersAmount = 4;
+        private readonly int TypeBHandlersAmount = 3;
 
-        public Factory(int modelingTime, int startProcessingTime, int startADetailsAtStorage,
-            int startBDetailsAtStorage, int startHandlersQueueAmount, int startProcessedADetailsAmount,
+        public Factory(int modelingTime, int startProcessingTime, int startADetailsToStorage,
+            int startBDetailsToStorage, int startHandlersQueueAmount, int startProcessedADetailsAmount,
             int startProcessedBDetailsAmount, int ADetailsAmountToMakeProduct, int BDetailsAmountToMakeProduct,
-            int delayTimeMin, int delayTimeAverage, int delayTimeMax, float deltaMu, float alpha)
+            int delayTimeMin, int delayTimeAverage, int delayTimeMax, float muCritical, float alpha)
         {
             if (modelingTime <= 0)
                 throw new ArgumentOutOfRangeException(nameof(modelingTime));
@@ -48,13 +45,12 @@ namespace Dynamic_Modeling
 
             LineA = new Handler[TypeAHandlersAmount];
             LineB = new Handler[TypeBHandlersAmount];
-            DetailsStorage = new Storage(modelingTime, startADetailsAtStorage, startBDetailsAtStorage, startProcessingTime);
             DetailsAssemblyDepartment = new AssemblyDepartment(modelingTime, startProcessedADetailsAmount, startProcessedBDetailsAmount);
             
-            InitializeLines(LineA, modelingTime, startHandlersQueueAmount, startProcessingTime);
-            InitializeLines(LineB, modelingTime, startHandlersQueueAmount, startProcessingTime);
+            InitializeLines(LineA, modelingTime, startHandlersQueueAmount, startProcessingTime, startADetailsToStorage);
+            InitializeLines(LineB, modelingTime, startHandlersQueueAmount, startProcessingTime, startBDetailsToStorage);
             
-            this.MuCritical = deltaMu;
+            this.muCritical = muCritical;
             this.alpha = alpha;
             this.delayTimeMin = delayTimeMin;
             this.delayTimeAverage = delayTimeAverage;
@@ -72,22 +68,52 @@ namespace Dynamic_Modeling
                 Dictionary<LineType, Instruction> Instructions = GetChangingLinesProcessingTimeInstructions();
 
                 foreach (KeyValuePair<LineType, Instruction> instruction in Instructions)
+                {
+                    // Пересчет уровней будет здесь...
+
                     ChangeLineProcessingTime(instruction.Key, instruction.Value);
+
+                    if (!(AddDetailsToStorage(LineA) && AddDetailsToStorage(LineB)))
+                        break;
+                }
             }
+        }
+
+        private bool AddDetailsToStorage(Handler[] line)
+        {
+            if (line[0].Queue[currentTime] < 0.05f * line[0].Queue[0])
+                return false;
+
+            if (line[0].Queue[currentTime] < 0.2f * line[0].Queue[0])
+                line[0].Queue[currentTime] += GetNewDetails();
+
+            return true;
+        }
+
+        private int GetNewDetails()
+        {
+            return 500;
         }
 
         private void ChangeLineProcessingTime(LineType lineType, Instruction instruction)
         {
             Handler[] line = (lineType == LineType.A) ? LineA : LineB;
             
-            if (instruction != Instruction.None)
-            {
-                float sign = (instruction == Instruction.Increase) ? 1 : -1;
+            float sign = (instruction == Instruction.Increase) ? 1 : -1;
 
-                for (int i = 0; i < line.Length; i++)
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (instruction != Instruction.None)
                 {
                     line[i].Delay[currentTime] = (int)Math.Round(delayTimeMin + delayTimeAverage * line[i].Queue[currentTime]
-                        / line[i].Delay[currentTime - 1] + sign * delayTimeMax);
+                        / line[i].Delay[currentTime - 1] + sign * alpha * delayTimeMax);
+
+                    line[i].ProcessingTime[currentTime] = (int)Math.Round(line[i].Queue[currentTime] / (float)line[i].Delay[currentTime]);
+                }
+                else
+                {
+                    line[i].Delay[currentTime] = line[i].Delay[currentTime - 1];
+                    line[i].ProcessingTime[currentTime] = line[i].ProcessingTime[currentTime - 1];
                 }
             }
         }
@@ -101,7 +127,7 @@ namespace Dynamic_Modeling
             muB = DetailsAssemblyDepartment.BDetailsAmount[currentTime] / BDetailsAmountToMakeProduct;
             deltaMu = Math.Abs(muA - muB);
 
-            if (deltaMu <= MuCritical)
+            if (deltaMu <= muCritical)
             {
                 Instructions.Add(LineType.A, Instruction.None);
                 Instructions.Add(LineType.B, Instruction.None);
@@ -124,7 +150,7 @@ namespace Dynamic_Modeling
         }
 
         private void InitializeLines(Handler[] line, int modelingTime, int startHandlersQueueAmount,
-            int startProcessingTime)
+            int startProcessingTime, int startDetailsAmount)
         {
             for (int i = 0; i < line.Length; i++)
             {
@@ -132,6 +158,8 @@ namespace Dynamic_Modeling
                 line[i].Queue[0] = startHandlersQueueAmount;
                 line[i].ProcessingTime[0] = startProcessingTime;
             }
+
+            line[0].Queue[0] = startDetailsAmount;
         }
     }
 }
