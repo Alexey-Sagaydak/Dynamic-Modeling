@@ -4,7 +4,7 @@ namespace Dynamic_Modeling
 {
     public struct Handler
     {
-        public int[] ProcessingTime {get; set; }
+        public int[] DetailsPerTact {get; set; }
         public int[] Queue { get; set; }
         public int[] Delay { get; set; }
 
@@ -13,7 +13,7 @@ namespace Dynamic_Modeling
             if (modelingTime <= 0)
                 throw new ArgumentOutOfRangeException(nameof(modelingTime));
 
-            ProcessingTime = new int[modelingTime];
+            DetailsPerTact = new int[modelingTime];
             Queue = new int[modelingTime];
             Delay = new int[modelingTime];
         }

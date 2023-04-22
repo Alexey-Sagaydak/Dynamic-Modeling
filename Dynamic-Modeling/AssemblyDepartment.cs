@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace Dynamic_Modeling
+﻿namespace Dynamic_Modeling
 {
     public struct AssemblyDepartment
     {
@@ -19,6 +12,18 @@ namespace Dynamic_Modeling
 
             ADetailsAmount[0] = startADetailsAmount;
             BDetailsAmount[0] = startBDetailsAmount;
+        }
+
+        public int[] this[LineType lineType]
+        {
+            get
+            {
+                if (lineType == LineType.A)
+                    return ADetailsAmount;
+                else
+                    return BDetailsAmount;
+                }
+            }
         }
     }
 }
