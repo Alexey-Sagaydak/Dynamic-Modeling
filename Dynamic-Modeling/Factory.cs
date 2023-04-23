@@ -73,16 +73,16 @@ namespace Dynamic_Modeling
                 //    { LineType.B, Instruction.None }
                 //};
 
-
+                foreach (KeyValuePair<LineType, Instruction> instruction in Instructions)
+                    ChangeLineDetailsPerTact(instruction.Key, instruction.Value);
+                
                 foreach (KeyValuePair<LineType, Instruction> instruction in Instructions)
                     ChangeLinesQueue(instruction.Key);
 
-                foreach (KeyValuePair<LineType, Instruction> instruction in Instructions)
-                    ChangeLineDetailsPerTact(instruction.Key, instruction.Value);
-
                 MakeProducts();
 
-                if (!(AddDetailsToStorage(LineA) && AddDetailsToStorage(LineB))) ;
+                // Нужно активировать, когда все будет работать
+                if (!(AddDetailsToStorage(LineA) && AddDetailsToStorage(LineB)));
                     //return false;
             }
 
@@ -151,24 +151,25 @@ namespace Dynamic_Modeling
             {
                 if (instruction != Instruction.None)
                 {
-                    line[i].Delay[currentTime] = (int)Math.Ceiling((delayTimeMin + delayTimeAverage * line[i].Queue[currentTime]
+                    line[i].Delay[currentTime] = (int)Math.Ceiling((delayTimeMin + delayTimeAverage * line[i].Queue[currentTime - 1]
                         / line[i].Delay[currentTime - 1] + sign * alpha * delayTimeMax));
 
-                    // НИЧЕГО НЕ РАБОТАЕТ!!!!!!!!!!!!!!!
+                    // ФОРМУЛА ДИБИЛЬНАЯ!!
 
-                    if (line[i].Delay[currentTime] <= delayTimeMin)
+                    // Сам придумал. Так можно??? 
+                    if (line[i].Delay[currentTime] < delayTimeMin)
                         line[i].Delay[currentTime] = (int)delayTimeMin;
 
-                    if (lineType == LineType.A && i == 0) ;
-                    Console.WriteLine($"{line[i].Queue[currentTime]} {line[i].Delay[currentTime - 1]}");
-
-                    line[i].DetailsPerTact[currentTime] = (int)Math.Ceiling(line[i].Queue[currentTime] / (float)line[i].Delay[currentTime]);
+                    if (line[i].Delay[currentTime] > delayTimeMin)
+                        line[i].Delay[currentTime] = (int)delayTimeMax;
+                    // P.S. Все равно не работает, так как задержка всегда становится максимальной(((
                 }
                 else
                 {
                     line[i].Delay[currentTime] = line[i].Delay[currentTime - 1];
-                    line[i].DetailsPerTact[currentTime] = line[i].DetailsPerTact[currentTime - 1];
                 }
+
+                line[i].DetailsPerTact[currentTime] = (int)Math.Ceiling(line[i].Queue[currentTime - 1] / (float)line[i].Delay[currentTime]);
             }
         }
 
