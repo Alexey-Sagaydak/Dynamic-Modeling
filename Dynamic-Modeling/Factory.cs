@@ -156,8 +156,8 @@ namespace Dynamic_Modeling
 
                     // НИЧЕГО НЕ РАБОТАЕТ!!!!!!!!!!!!!!!
 
-                    //if (line[i].Delay[currentTime] < 0)
-                    //    line[i].Delay[currentTime] = 1;
+                    if (line[i].Delay[currentTime] <= delayTimeMin)
+                        line[i].Delay[currentTime] = (int)delayTimeMin;
 
                     if (lineType == LineType.A && i == 0) ;
                     Console.WriteLine($"{line[i].Queue[currentTime]} {line[i].Delay[currentTime - 1]}");
@@ -188,7 +188,7 @@ namespace Dynamic_Modeling
             }
             else
             {
-                if (muA > muB)
+                if (muA < muB)
                 {
                     Instructions.Add(LineType.A, Instruction.Decrease);
                     Instructions.Add(LineType.B, Instruction.Increase);
