@@ -67,6 +67,9 @@ namespace Dynamic_Modeling
             for (; currentTime < ModelingTime; currentTime++)
             {
                 Dictionary<LineType, Instruction> Instructions = GetChangingLinesProcessingTimeInstructions();
+
+                // Этот код убирает изменение задержек
+
                 //Dictionary<LineType, Instruction> Instructions = new Dictionary<LineType, Instruction>()
                 //{
                 //    { LineType.A, Instruction.None },
@@ -81,9 +84,8 @@ namespace Dynamic_Modeling
 
                 MakeProducts();
 
-                // Нужно активировать, когда все будет работать
-                if (!(AddDetailsToStorage(LineA) && AddDetailsToStorage(LineB)));
-                    //return false;
+                if (!(AddDetailsToStorage(LineA) && AddDetailsToStorage(LineB)))
+                    return false;
             }
 
             return true;
@@ -151,18 +153,13 @@ namespace Dynamic_Modeling
             {
                 if (instruction != Instruction.None)
                 {
-                    line[i].Delay[currentTime] = (int)Math.Ceiling((delayTimeMin + delayTimeAverage * line[i].Queue[currentTime - 1]
-                        / line[i].Delay[currentTime - 1] + sign * alpha * delayTimeMax));
+                    line[i].Delay[currentTime] = (int)Math.Ceiling((delayTimeMin + sign * alpha * delayTimeMax));
 
-                    // ФОРМУЛА ДИБИЛЬНАЯ!!
-
-                    // Сам придумал. Так можно??? 
                     if (line[i].Delay[currentTime] < delayTimeMin)
                         line[i].Delay[currentTime] = (int)delayTimeMin;
 
-                    if (line[i].Delay[currentTime] > delayTimeMin)
+                    if (line[i].Delay[currentTime] > delayTimeMax)
                         line[i].Delay[currentTime] = (int)delayTimeMax;
-                    // P.S. Все равно не работает, так как задержка всегда становится максимальной(((
                 }
                 else
                 {

@@ -8,12 +8,9 @@ namespace Dynamic_Modeling
         [STAThread]
         static void Main()
         {
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new ChartForm());
-
-            Factory factory = new Factory(100, 100, 700, 1000, 200, 30, 40, 200, 300, 4, 12, 20, 0.1f, 0.5f);
-            factory.StartModeling();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new ChartForm());
         }
     }
 }
