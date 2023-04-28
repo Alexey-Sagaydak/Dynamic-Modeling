@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{28A4C86D-90A2-41B5-9534-D7D01D63494C}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>Dynamic_Modeling</RootNamespace>
     <AssemblyName>Dynamic-Modeling</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
